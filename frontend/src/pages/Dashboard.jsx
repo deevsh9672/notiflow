@@ -66,11 +66,18 @@ export default function Dashboard() {
   const saveTemplate = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/templates/', modalData);
+      // Ensure nulls are empty strings so Django serializer doesn't fail
+      const payload = {
+        ...modalData,
+        title: modalData.title || '',
+        subject: modalData.subject || '',
+      };
+      await api.post('/api/templates/', payload);
       setIsModalOpen(false);
       fetchData();
     } catch (err) {
-      alert("Error saving template");
+      console.error(err.response?.data || err);
+      alert("Error saving template: " + JSON.stringify(err.response?.data || {}));
     }
   };
 
