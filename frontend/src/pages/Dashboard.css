@@ -208,6 +208,28 @@
   border-color: #93c5fd;
 }
 
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-test {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-test:hover {
+  background-color: #d97706;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;

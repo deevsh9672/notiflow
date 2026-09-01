@@ -120,6 +120,35 @@ export default function Dashboard() {
     }
   };
 
+  const handleTestSend = async (triggerSlug) => {
+    try {
+      // Get the logged in user from localStorage
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      if (!user) {
+        alert("Could not identify current user.");
+        return;
+      }
+      
+      alert(`Sending test notification for '${triggerSlug}'...`);
+      await api.post('/api/notifications/trigger/', {
+        trigger_slug: triggerSlug,
+        user_id: user.id || user._id,
+        variables: {
+          user_name: user.name || "Test User",
+          amount: "$99.99",
+          order_id: "ORD-12345",
+          login_time: new Date().toLocaleTimeString(),
+          logout_time: new Date().toLocaleTimeString(),
+          reset_link: "https://yourwebsite.com/reset-password"
+        }
+      });
+      alert("✅ Test Send Successful! Check your email/phone/browser.");
+    } catch (err) {
+      alert("❌ Error sending test: " + JSON.stringify(err.response?.data || err.message));
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -175,9 +204,16 @@ export default function Dashboard() {
                         ) : (
                           <span className="empty-status">Not Configured</span>
                         )}
-                        <button className={`btn-edit ${t ? 'outline' : 'solid'}`} onClick={() => openEditModal(trigger._id, channel)}>
-                          {t ? 'Edit' : 'Create'}
-                        </button>
+                        <div className="btn-group">
+                          <button className={`btn-edit ${t ? 'outline' : 'solid'}`} onClick={() => openEditModal(trigger._id, channel)}>
+                            {t ? 'Edit' : 'Create'}
+                          </button>
+                          {t && (
+                            <button className="btn-test" onClick={() => handleTestSend(trigger.slug)} title="Send a test notification">
+                              Test
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </td>
                   );
