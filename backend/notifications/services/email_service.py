@@ -1,4 +1,4 @@
-import requests
+from django.core.mail import send_mail
 from django.conf import settings
 
 class EmailService:
@@ -8,25 +8,17 @@ class EmailService:
             print(f"[MOCK EMAIL] To: {to} | Subject: {subject} | Body: {body}")
             return {"status": "mocked", "id": "mock_email_123"}
             
-        token = settings.POSTMARKAPP_TOKEN
-        from_email = settings.POSTMARK_FROM_EMAIL
-        
-        if not token or not from_email:
-            raise ValueError("Postmark configuration is missing")
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            raise ValueError("SMTP credentials are not configured in environment variables.")
             
-        url = "https://api.postmarkapp.com/email"
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "X-Postmark-Server-Token": token
-        }
-        payload = {
-            "From": from_email,
-            "To": to,
-            "Subject": subject,
-            "TextBody": body
-        }
-        
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()
+        try:
+            send_mail(
+                subject=subject,
+                message=body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[to],
+                fail_silently=False,
+            )
+            return {"status": "sent", "provider": "smtp"}
+        except Exception as e:
+            raise ValueError(f"SMTP Error: {str(e)}")
