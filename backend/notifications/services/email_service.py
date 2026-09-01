@@ -8,35 +8,32 @@ class EmailService:
             print(f"[MOCK EMAIL] To: {to} | Subject: {subject} | Body: {body}")
             return {"status": "mocked", "id": "mock_email_123"}
             
-        api_key = settings.MAILJET_API_KEY
-        secret_key = settings.MAILJET_SECRET_KEY
-        from_email = settings.MAILJET_FROM_EMAIL
+        api_key = settings.BREVO_API_KEY
+        from_email = settings.BREVO_FROM_EMAIL
         
-        if not api_key or not secret_key or not from_email:
-            raise ValueError("Mailjet configuration is missing")
+        if not api_key or not from_email:
+            raise ValueError("Brevo configuration is missing")
             
-        url = "https://api.mailjet.com/v3.1/send"
+        url = "https://api.brevo.com/v3/smtp/email"
         headers = {
-            "Content-Type": "application/json"
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "api-key": api_key
         }
         payload = {
-            "Messages": [
+            "sender": {
+                "name": "Notification System",
+                "email": from_email
+            },
+            "to": [
                 {
-                    "From": {
-                        "Email": from_email,
-                        "Name": "Notification System"
-                    },
-                    "To": [
-                        {
-                            "Email": to
-                        }
-                    ],
-                    "Subject": subject,
-                    "TextPart": body
+                    "email": to
                 }
-            ]
+            ],
+            "subject": subject,
+            "textContent": body
         }
         
-        response = requests.post(url, auth=(api_key, secret_key), headers=headers, json=payload)
+        response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         return response.json()
