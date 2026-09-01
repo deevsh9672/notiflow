@@ -72,8 +72,9 @@ PHONE_NUMBER_ID = os.environ.get('PHONE_NUMBER_ID', '')
 ONESIGNAL_APP_ID = os.environ.get('ONESIGNAL_APP_ID', '')
 ONESIGNAL_REST_API_KEY = os.environ.get('ONESIGNAL_REST_API_KEY', '')
 
-POSTMARKAPP_TOKEN = os.environ.get('POSTMARKAPP_TOKEN', '')
-POSTMARK_FROM_EMAIL = os.environ.get('POSTMARK_FROM_EMAIL', '')
+MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY', '')
+MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY', '')
+MAILJET_FROM_EMAIL = os.environ.get('MAILJET_FROM_EMAIL', '')
 
 NOTIFICATION_MOCK_MODE = os.environ.get('NOTIFICATION_MOCK_MODE', 'True') == 'True'
 

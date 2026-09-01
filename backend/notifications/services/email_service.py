@@ -8,25 +8,35 @@ class EmailService:
             print(f"[MOCK EMAIL] To: {to} | Subject: {subject} | Body: {body}")
             return {"status": "mocked", "id": "mock_email_123"}
             
-        token = settings.POSTMARKAPP_TOKEN
-        from_email = settings.POSTMARK_FROM_EMAIL
+        api_key = settings.MAILJET_API_KEY
+        secret_key = settings.MAILJET_SECRET_KEY
+        from_email = settings.MAILJET_FROM_EMAIL
         
-        if not token or not from_email:
-            raise ValueError("Postmark configuration is missing")
+        if not api_key or not secret_key or not from_email:
+            raise ValueError("Mailjet configuration is missing")
             
-        url = "https://api.postmarkapp.com/email"
+        url = "https://api.mailjet.com/v3.1/send"
         headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "X-Postmark-Server-Token": token
+            "Content-Type": "application/json"
         }
         payload = {
-            "From": from_email,
-            "To": to,
-            "Subject": subject,
-            "TextBody": body
+            "Messages": [
+                {
+                    "From": {
+                        "Email": from_email,
+                        "Name": "Notification System"
+                    },
+                    "To": [
+                        {
+                            "Email": to
+                        }
+                    ],
+                    "Subject": subject,
+                    "TextPart": body
+                }
+            ]
         }
         
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(url, auth=(api_key, secret_key), headers=headers, json=payload)
         response.raise_for_status()
         return response.json()
