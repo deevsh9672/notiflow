@@ -8,6 +8,17 @@ export default function Dashboard() {
   const [templates, setTemplates] = useState({});
   const navigate = useNavigate();
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalData, setModalData] = useState({
+    trigger_id: '',
+    channel: '',
+    title: '',
+    subject: '',
+    body: '',
+    is_enabled: true
+  });
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -35,30 +46,46 @@ export default function Dashboard() {
     return triggerTemplates.find(t => t.channel === channel);
   };
 
-  const handleEdit = (triggerId, channel) => {
-    // Basic prompt for demonstration. In real app, open a modal.
+  const openEditModal = (triggerId, channel) => {
     const template = getTemplateForChannel(triggerId, channel);
-    const body = prompt(`Enter new template body for ${channel}:`, template ? template.body : '');
-    
-    if (body !== null) {
-      api.post('/api/templates/', {
+    if (template) {
+      setModalData(template);
+    } else {
+      setModalData({
         trigger_id: triggerId,
         channel: channel,
-        body: body,
-        title: "Notification",
-        subject: "Notification",
+        title: '',
+        subject: '',
+        body: '',
         is_enabled: true
-      }).then(() => fetchData());
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const saveTemplate = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/api/templates/', modalData);
+      setIsModalOpen(false);
+      fetchData();
+    } catch (err) {
+      alert("Error saving template");
     }
   };
 
-  const toggleStatus = (template) => {
+  const toggleStatus = async (template) => {
     if (!template) return;
-    api.post('/api/templates/', {
-      ...template,
-      trigger_id: template.trigger_id, // keep it same
-      is_enabled: !template.is_enabled
-    }).then(() => fetchData());
+    try {
+      await api.post('/api/templates/', {
+        ...template,
+        trigger_id: template.trigger_id, 
+        is_enabled: !template.is_enabled
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleLogout = () => {
@@ -69,50 +96,110 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <header>
-        <h1>Notification System Admin</h1>
-        <button onClick={handleLogout}>Logout</button>
+      <header className="dashboard-header">
+        <div>
+          <h1>Notification System Admin</h1>
+          <p className="subtitle">Manage all your triggers and channels in one place</p>
+        </div>
+        <button className="btn-logout" onClick={handleLogout}>Logout</button>
       </header>
 
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Trigger</th>
-            <th>WhatsApp</th>
-            <th>Email</th>
-            <th>Web Push</th>
-          </tr>
-        </thead>
-        <tbody>
-          {triggers.map(trigger => (
-            <tr key={trigger._id}>
-              <td>{trigger.name}</td>
-              {['WHATSAPP', 'EMAIL', 'WEB_PUSH'].map(channel => {
-                const t = getTemplateForChannel(trigger._id, channel);
-                return (
-                  <td key={channel}>
-                    <div className="cell-content">
-                      <span className={`status ${t?.is_enabled ? 'on' : 'off'}`}>
-                        {t?.is_enabled ? 'ON' : 'OFF'}
-                      </span>
-                      <div className="actions">
-                        <button onClick={() => handleEdit(trigger._id, channel)}>
+      <div className="table-wrapper">
+        <table className="premium-table">
+          <thead>
+            <tr>
+              <th>Trigger Event</th>
+              <th>WhatsApp</th>
+              <th>Email</th>
+              <th>Web Push</th>
+            </tr>
+          </thead>
+          <tbody>
+            {triggers.map(trigger => (
+              <tr key={trigger._id}>
+                <td className="trigger-name">
+                  <strong>{trigger.name}</strong>
+                  <span className="trigger-slug">{trigger.slug}</span>
+                </td>
+                {['WHATSAPP', 'EMAIL', 'WEB_PUSH'].map(channel => {
+                  const t = getTemplateForChannel(trigger._id, channel);
+                  return (
+                    <td key={channel}>
+                      <div className="cell-content">
+                        {t ? (
+                          <div className="template-status-wrapper">
+                            <button 
+                              className={`toggle-btn ${t.is_enabled ? 'on' : 'off'}`}
+                              onClick={() => toggleStatus(t)}
+                              title="Click to toggle status"
+                            >
+                              {t.is_enabled ? 'Active' : 'Disabled'}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="empty-status">Not Configured</span>
+                        )}
+                        <button className={`btn-edit ${t ? 'outline' : 'solid'}`} onClick={() => openEditModal(trigger._id, channel)}>
                           {t ? 'Edit' : 'Create'}
                         </button>
-                        {t && (
-                          <button onClick={() => toggleStatus(t)}>
-                            Toggle
-                          </button>
-                        )}
                       </div>
-                    </div>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>{modalData._id ? 'Edit Template' : 'Create Template'} - {modalData.channel}</h2>
+            <form onSubmit={saveTemplate}>
+              <div className="form-group">
+                <label>Title (Optional)</label>
+                <input 
+                  type="text" 
+                  value={modalData.title} 
+                  onChange={(e) => setModalData({...modalData, title: e.target.value})} 
+                  placeholder="Internal Title or Web Push Title"
+                />
+              </div>
+              
+              {modalData.channel === 'EMAIL' && (
+                <div className="form-group">
+                  <label>Subject</label>
+                  <input 
+                    type="text" 
+                    value={modalData.subject || ''} 
+                    onChange={(e) => setModalData({...modalData, subject: e.target.value})} 
+                    placeholder="Email Subject"
+                    required
+                  />
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label>Message Body</label>
+                <textarea 
+                  value={modalData.body} 
+                  onChange={(e) => setModalData({...modalData, body: e.target.value})} 
+                  placeholder="Hello {{user_name}}..."
+                  required
+                  rows={5}
+                />
+                <small className="help-text">You can use variables like {'{{user_name}}'}</small>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-save">Save Template</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
