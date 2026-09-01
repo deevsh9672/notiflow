@@ -90,12 +90,15 @@ export default function Dashboard() {
     try {
       await api.post('/api/templates/', {
         ...template,
+        title: template.title || '',
+        subject: template.subject || '',
         trigger_id: template.trigger_id, 
         is_enabled: !template.is_enabled
       });
       fetchData();
     } catch (err) {
       console.error(err);
+      alert("Error toggling: " + JSON.stringify(err.response?.data || {}));
     }
   };
 
