@@ -163,13 +163,14 @@ export default function Dashboard() {
                       <div className="cell-content">
                         {t ? (
                           <div className="template-status-wrapper">
-                            <button 
-                              className={`toggle-btn ${t.is_enabled ? 'on' : 'off'}`}
+                            <div 
+                              className={`toggle-switch ${t.is_enabled ? 'on' : 'off'}`}
                               onClick={() => toggleStatus(t)}
                               title="Click to toggle status"
                             >
-                              {t.is_enabled ? 'Active' : 'Disabled'}
-                            </button>
+                              <div className="toggle-slider"></div>
+                              <span className="toggle-label">{t.is_enabled ? 'ON' : 'OFF'}</span>
+                            </div>
                           </div>
                         ) : (
                           <span className="empty-status">Not Configured</span>
