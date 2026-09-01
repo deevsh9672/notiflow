@@ -8,7 +8,7 @@ export default function Dashboard() {
   const [templates, setTemplates] = useState({});
   const navigate = useNavigate();
 
-  // Modal State
+  // Edit Template Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState({
     trigger_id: '',
@@ -18,6 +18,10 @@ export default function Dashboard() {
     body: '',
     is_enabled: true
   });
+
+  // Add Trigger Modal State
+  const [isTriggerModalOpen, setIsTriggerModalOpen] = useState(false);
+  const [triggerName, setTriggerName] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -95,6 +99,27 @@ export default function Dashboard() {
     }
   };
 
+  const saveTrigger = async (e) => {
+    e.preventDefault();
+    if (!triggerName) return;
+    
+    // Auto generate a slug from the name (e.g. "Password Reset" -> "password_reset")
+    const slug = triggerName.toLowerCase().replace(/ /g, '_').replace(/[^\w-]+/g, '');
+    
+    try {
+      await api.post('/api/triggers/', {
+        name: triggerName,
+        slug: slug,
+        event_type: "CUSTOM_EVENT"
+      });
+      setTriggerName('');
+      setIsTriggerModalOpen(false);
+      fetchData();
+    } catch (err) {
+      alert("Error creating trigger: " + JSON.stringify(err.response?.data || {}));
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -108,7 +133,10 @@ export default function Dashboard() {
           <h1>Notification System Admin</h1>
           <p className="subtitle">Manage all your triggers and channels in one place</p>
         </div>
-        <button className="btn-logout" onClick={handleLogout}>Logout</button>
+        <div className="header-actions">
+          <button className="btn-add-trigger" onClick={() => setIsTriggerModalOpen(true)}>+ Add Trigger</button>
+          <button className="btn-logout" onClick={handleLogout}>Logout</button>
+        </div>
       </header>
 
       <div className="table-wrapper">
@@ -202,6 +230,31 @@ export default function Dashboard() {
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
                 <button type="submit" className="btn-save">Save Template</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isTriggerModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{maxWidth: '400px'}}>
+            <h2>Create New Trigger</h2>
+            <form onSubmit={saveTrigger}>
+              <div className="form-group">
+                <label>Trigger Name</label>
+                <input 
+                  type="text" 
+                  value={triggerName} 
+                  onChange={(e) => setTriggerName(e.target.value)} 
+                  placeholder="e.g. Password Reset"
+                  required
+                />
+                <small className="help-text">A unique slug will be automatically generated.</small>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setIsTriggerModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-save">Create</button>
               </div>
             </form>
           </div>

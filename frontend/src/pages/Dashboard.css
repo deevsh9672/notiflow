@@ -23,6 +23,27 @@
   font-size: 15px;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-add-trigger {
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-add-trigger:hover {
+  background-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
 .btn-logout {
   padding: 10px 20px;
   background-color: #ef4444;
