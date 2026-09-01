@@ -72,14 +72,8 @@ PHONE_NUMBER_ID = os.environ.get('PHONE_NUMBER_ID', '')
 ONESIGNAL_APP_ID = os.environ.get('ONESIGNAL_APP_ID', '')
 ONESIGNAL_REST_API_KEY = os.environ.get('ONESIGNAL_REST_API_KEY', '')
 
-# SMTP Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('SMTP_PORT', 587))
-EMAIL_USE_TLS = os.environ.get('SMTP_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.environ.get('SMTP_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('SMTP_FROM_EMAIL', EMAIL_HOST_USER)
+POSTMARKAPP_TOKEN = os.environ.get('POSTMARKAPP_TOKEN', '')
+POSTMARK_FROM_EMAIL = os.environ.get('POSTMARK_FROM_EMAIL', '')
 
 NOTIFICATION_MOCK_MODE = os.environ.get('NOTIFICATION_MOCK_MODE', 'True') == 'True'
 
