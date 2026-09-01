@@ -133,6 +133,13 @@ export default function Dashboard() {
         return;
       }
       
+      const customEmail = prompt(`Enter an email address to send this test to:\n(Leave blank to send to your logged-in admin email: ${user.email})`);
+      
+      if (customEmail === null) {
+        // User clicked Cancel
+        return; 
+      }
+      
       alert(`Sending test notification for '${triggerSlug}'...`);
       await api.post('/api/notifications/trigger/', {
         trigger_slug: triggerSlug,
@@ -143,10 +150,11 @@ export default function Dashboard() {
           order_id: "ORD-12345",
           login_time: new Date().toLocaleTimeString(),
           logout_time: new Date().toLocaleTimeString(),
-          reset_link: "https://yourwebsite.com/reset-password"
+          reset_link: "https://yourwebsite.com/reset-password",
+          override_email: customEmail.trim() || user.email
         }
       });
-      alert("✅ Test Send Successful! Check your email/phone/browser.");
+      alert(`✅ Test Send Successful! Email dispatched to ${customEmail.trim() || user.email}.`);
     } catch (err) {
       alert("❌ Error sending test: " + JSON.stringify(err.response?.data || err.message));
     }

@@ -70,7 +70,7 @@ class NotificationService:
                 response = WhatsAppService.send_message(recipient, body)
                 
             elif channel == 'EMAIL':
-                recipient = user.get('email')
+                recipient = variables_data.get('override_email') or user.get('email')
                 if not recipient:
                     raise ValueError("User has no email")
                 log_data["recipient"] = recipient
