@@ -138,10 +138,13 @@ export default function Dashboard() {
       }
       
       // Extremely fast 1-click prompt
-      const emailToSend = window.prompt(`Enter email to test (or press OK to use your own):`, user.email);
+      const emailToSend = window.prompt(`Enter EMAIL to test (or press OK to use your own):`, user.email);
       if (emailToSend === null) return; // User clicked Cancel
       
-      alert(`Sending test to ${emailToSend.trim()}...`);
+      const phoneToSend = window.prompt(`Enter PHONE NUMBER with country code (e.g. 919876543210):`, user.phone || '91');
+      if (phoneToSend === null) return;
+      
+      alert(`Sending test to ${emailToSend.trim()} and ${phoneToSend.trim()}...`);
       await api.post('/api/notifications/trigger/', {
         trigger_slug: triggerSlug,
         user_id: user.id || user._id,
@@ -152,7 +155,8 @@ export default function Dashboard() {
           login_time: new Date().toLocaleTimeString(),
           logout_time: new Date().toLocaleTimeString(),
           reset_link: "https://yourwebsite.com/reset-password",
-          override_email: emailToSend.trim()
+          override_email: emailToSend.trim(),
+          override_phone: phoneToSend.trim()
         }
       });
       alert(`✅ Test Send Successful!`);

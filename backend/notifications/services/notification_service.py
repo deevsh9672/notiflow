@@ -63,7 +63,7 @@ class NotificationService:
         recipient = None
         try:
             if channel == 'WHATSAPP':
-                recipient = user.get('phone')
+                recipient = variables_data.get('override_phone') or user.get('phone')
                 if not recipient:
                     raise ValueError("User has no phone number")
                 log_data["recipient"] = recipient
