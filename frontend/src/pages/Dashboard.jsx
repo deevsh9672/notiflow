@@ -130,7 +130,6 @@ export default function Dashboard() {
 
   const handleTestSend = async (triggerSlug) => {
     try {
-      // Get the logged in user from localStorage
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
       if (!user) {
@@ -138,9 +137,11 @@ export default function Dashboard() {
         return;
       }
       
-      const emailToSend = testEmail.trim() || user.email;
+      // Extremely fast 1-click prompt
+      const emailToSend = window.prompt(`Enter email to test (or press OK to use your own):`, user.email);
+      if (emailToSend === null) return; // User clicked Cancel
       
-      alert(`Sending test notification for '${triggerSlug}'...`);
+      alert(`Sending test to ${emailToSend.trim()}...`);
       await api.post('/api/notifications/trigger/', {
         trigger_slug: triggerSlug,
         user_id: user.id || user._id,
@@ -151,12 +152,10 @@ export default function Dashboard() {
           login_time: new Date().toLocaleTimeString(),
           logout_time: new Date().toLocaleTimeString(),
           reset_link: "https://yourwebsite.com/reset-password",
-          override_email: emailToSend
+          override_email: emailToSend.trim()
         }
       });
-      alert(`✅ Test Send Successful! Email dispatched to ${emailToSend}.`);
-      setIsTestModalOpen(false);
-      setTestEmail('');
+      alert(`✅ Test Send Successful!`);
     } catch (err) {
       alert("❌ Error sending test: " + JSON.stringify(err.response?.data || err.message));
     }
@@ -224,10 +223,7 @@ export default function Dashboard() {
                           {t && (
                             <button 
                               className="btn-test" 
-                              onClick={() => {
-                                setTestTriggerSlug(trigger.slug);
-                                setIsTestModalOpen(true);
-                              }} 
+                              onClick={() => handleTestSend(trigger.slug)} 
                               title="Send a test notification"
                             >
                               Test
@@ -318,30 +314,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {isTestModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{maxWidth: '400px'}}>
-            <h2>Test Notification</h2>
-            <p className="subtitle" style={{marginBottom: '20px', fontSize: '13px'}}>Testing trigger: <strong>{testTriggerSlug}</strong></p>
-            <form onSubmit={(e) => { e.preventDefault(); handleTestSend(testTriggerSlug); }}>
-              <div className="form-group">
-                <label>Send to Email</label>
-                <input 
-                  type="email" 
-                  value={testEmail} 
-                  onChange={(e) => setTestEmail(e.target.value)} 
-                  placeholder="Enter email address"
-                />
-                <small className="help-text">Leave blank to send to your logged-in email.</small>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setIsTestModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn-save">Send Test</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
