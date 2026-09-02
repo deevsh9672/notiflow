@@ -128,7 +128,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleTestSend = async (triggerSlug) => {
+  const handleTestSend = async (triggerSlug, channel) => {
     try {
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
@@ -137,16 +137,30 @@ export default function Dashboard() {
         return;
       }
       
-      // Extremely fast 1-click prompt
-      const emailToSend = window.prompt(`Enter EMAIL to test (or press OK to use your own):`, user.email);
-      if (emailToSend === null) return; // User clicked Cancel
+      let emailToSend = '';
+      let phoneToSend = '';
       
-      const phoneToSend = window.prompt(`Enter PHONE NUMBER with country code (e.g. 919876543210):`, user.phone || '91');
-      if (phoneToSend === null) return;
+      if (channel === 'EMAIL' || !channel) {
+        const result = window.prompt(`Enter EMAIL to test:`, user.email);
+        if (result === null) return;
+        emailToSend = result;
+      }
       
-      alert(`Sending test to ${emailToSend.trim()} and ${phoneToSend.trim()}...`);
+      if (channel === 'WHATSAPP' || !channel) {
+        const result = window.prompt(`Enter PHONE NUMBER with country code (e.g. 919876543210):`, user.phone || '91');
+        if (result === null) return;
+        phoneToSend = result;
+      }
+      
+      if (channel === 'WEB_PUSH' || !channel) {
+        const confirmPush = window.confirm(`Send Web Push Test?`);
+        if (!confirmPush) return;
+      }
+      
+      alert(`Sending test for ${channel}...`);
       await api.post('/api/notifications/trigger/', {
         trigger_slug: triggerSlug,
+        test_channel: channel,
         user_id: user.id || user._id,
         variables: {
           user_name: user.name || "Test User",
@@ -227,7 +241,7 @@ export default function Dashboard() {
                           {t && (
                             <button 
                               className="btn-test" 
-                              onClick={() => handleTestSend(trigger.slug)} 
+                              onClick={() => handleTestSend(trigger.slug, channel)} 
                               title="Send a test notification"
                             >
                               Test

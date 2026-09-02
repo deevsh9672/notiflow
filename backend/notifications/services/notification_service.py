@@ -23,7 +23,7 @@ class NotificationService:
         return re.sub(r'\{\{([^}]+)\}\}', replacer, text)
 
     @classmethod
-    def trigger_event(cls, user, trigger, variables_data=None):
+    def trigger_event(cls, user, trigger, variables_data=None, test_channel=None):
         variables_data = variables_data or {}
         # Auto-inject user data
         variables_data.update({
@@ -32,10 +32,14 @@ class NotificationService:
             "phone": user.get('phone', '')
         })
 
-        templates = TemplateRepository.find({
+        query = {
             "trigger_id": trigger["_id"],
             "is_enabled": True
-        })
+        }
+        if test_channel:
+            query["channel"] = test_channel
+
+        templates = TemplateRepository.find(query)
 
         for template in templates:
             cls.dispatch_notification(user, trigger, template, variables_data)

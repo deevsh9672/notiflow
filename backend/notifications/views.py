@@ -26,7 +26,8 @@ class TriggerEventView(APIView):
                 return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 
             # Run asynchronously in real app; synchronous here for simplicity
-            NotificationService.trigger_event(user, trigger, data.get('variables', {}))
+            test_channel = data.get('test_channel')
+            NotificationService.trigger_event(user, trigger, data.get('variables', {}), test_channel=test_channel)
             
             return Response({"message": "Event triggered successfully"})
             
